@@ -7,24 +7,27 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <!-- Fullscreen background canvas -->
+  <!-- Soft nature background canvas -->
   <canvas id="bg"></canvas>
 
   <header class="hud">
     <div class="hud-left">
       <div class="badge">
-        <span class="spark"></span>
-        <span class="badgeText">MOM QUEST</span>
+        <span class="leaf">🍃</span>
+        <span class="badgeText">BIRTHDAY GARDEN</span>
       </div>
+
       <div class="meter">
-        <div class="meterLabel">Happiness</div>
-        <div class="meterBar"><div class="meterFill" id="meterFill"></div></div>
+        <div class="meterLabel">Joy Meter</div>
+        <div class="meterBar">
+          <div class="meterFill" id="meterFill"></div>
+        </div>
       </div>
     </div>
 
     <div class="hud-right">
-      <button class="chip" id="btnBurst" title="Big burst!">⚡ Burst</button>
-      <button class="chip" id="btnNeon" aria-pressed="true" title="Toggle neon mode">🟣 Neon: On</button>
+      <button class="chip" id="btnBurst" title="Big confetti burst">🎉 Burst</button>
+      <button class="chip" id="btnSun" aria-pressed="true" title="Toggle sunlight mode">☀️ Sun: On</button>
       <button class="chip" id="btnReset" title="Reset everything">↺ Reset</button>
     </div>
   </header>
@@ -33,45 +36,46 @@
     <section class="panel hero">
       <div class="heroTop">
         <div class="titleBlock">
-          <div class="tag">LEVEL UP 🎮</div>
+          <div class="tag">TODAY’S QUEST 🌼</div>
           <h1>
             Happy Birthday<br />
             <span class="mom">To The Best Mom Ever!</span>
           </h1>
           <p class="sub">
-            Mini-games + effects everywhere. Click, drag, and collect sparkles ✨
+            Everything is clickable. Eat cake 🎂, collect sparkles ✨, and sprinkle hearts 💖
           </p>
           <div class="actions">
-            <button class="btn primary" id="btnStart">▶ Start Party</button>
-            <button class="btn" id="btnMessage">💬 Drop a Message</button>
+            <button class="btn primary" id="btnStart">🌿 Start Party</button>
+            <button class="btn" id="btnMessage">💬 Sweet Messages</button>
           </div>
         </div>
 
         <div class="scoreCard">
           <div class="scoreRow">
-            <div class="scoreLabel">Sparkles</div>
+            <div class="scoreLabel">Sparkles ✨</div>
             <div class="scoreValue" id="sparklesCount">0</div>
           </div>
           <div class="scoreRow">
-            <div class="scoreLabel">Bites</div>
+            <div class="scoreLabel">Cake Bites 🍰</div>
             <div class="scoreValue" id="bitesCount">0</div>
           </div>
           <div class="scoreRow">
-            <div class="scoreLabel">Hearts</div>
+            <div class="scoreLabel">Hearts 💖</div>
             <div class="scoreValue" id="heartsCount">0</div>
           </div>
         </div>
       </div>
 
       <div class="heroGrid">
+        <!-- Cake -->
         <section class="card">
           <div class="cardHead">
-            <h2>🍰 Neon Cake Bites</h2>
-            <p>Click the cake to bite it. It shrinks + spits sugar pixels.</p>
+            <h2>🎂 Garden Cake</h2>
+            <p>Click the cake to take a bite. It shrinks and drops sprinkles.</p>
           </div>
 
           <div class="arena">
-            <div class="cakeStage">
+            <div class="cakeStage" id="cakeStage">
               <div class="cakeGlow"></div>
               <button class="cake" id="cake" aria-label="Cake">
                 <div class="cakeLayer layer1"></div>
@@ -85,7 +89,8 @@
 
                 <div class="cakeLabel">CLICK ME</div>
               </button>
-              <div class="crumbBox" id="crumbBox" aria-hidden="true"></div>
+
+              <div class="sprinkleBox" id="sprinkleBox" aria-hidden="true"></div>
             </div>
 
             <div class="tinyRow">
@@ -95,14 +100,15 @@
           </div>
         </section>
 
+        <!-- Hearts -->
         <section class="card">
           <div class="cardHead">
-            <h2>🧲 Magnet Hearts</h2>
-            <p>Move your mouse: hearts drift toward your cursor. Click to spawn more.</p>
+            <h2>💖 Heart Garden</h2>
+            <p>Hearts drift toward your cursor. Click empty space to add more.</p>
           </div>
 
           <div class="arena heartsArena" id="heartsArena" aria-label="Hearts arena">
-            <div class="hint">Move mouse ✨ • Click to add 💗</div>
+            <div class="hint">Move mouse ✨ • Click to add 💖 • Click a heart to pop ✨</div>
           </div>
 
           <div class="tinyRow">
@@ -111,21 +117,22 @@
           </div>
         </section>
 
+        <!-- Collector -->
         <section class="card wide">
           <div class="cardHead">
             <h2>🌟 Sparkle Collector</h2>
-            <p>Drag to draw a neon trail. Collect the floating orbs to fill the happiness meter.</p>
+            <p>Drag inside the box to draw a trail. Touch orbs to collect them.</p>
           </div>
 
-          <div class="arena collector" id="collector" aria-label="Sparkle collector arena">
+          <div class="arena collector" id="collector" aria-label="Sparkle collector">
             <div class="collectorHud">
               <div class="collectorTag">DRAG TO DRAW</div>
-              <div class="collectorMsg" id="collectorMsg">Catch 10 orbs for a mega burst ⚡</div>
+              <div class="collectorMsg" id="collectorMsg">Collect 10 orbs for a mega burst 🎉</div>
             </div>
           </div>
 
           <div class="tinyRow">
-            <div class="pill">Tip: Orbs spawn faster after Burst ⚡</div>
+            <div class="pill">Tip: Burst 🎉 spawns extra orbs</div>
             <button class="chip small ghost" id="btnSpawnOrbs">Spawn Orbs</button>
           </div>
         </section>
@@ -135,10 +142,10 @@
     <footer class="footer">
       <div class="footLeft">
         <span class="dot"></span>
-        <span id="footerText">Ready for the party.</span>
+        <span id="footerText">Ready 🌿</span>
       </div>
       <div class="footRight">
-        <span class="micro">Click anything 😄</span>
+        <span class="micro">Tap anywhere for a little sparkle ✨</span>
       </div>
     </footer>
   </main>
@@ -149,13 +156,13 @@
   <div class="modal" id="modal" aria-hidden="true">
     <div class="modalPanel" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
       <div class="modalTop">
-        <h3 id="modalTitle">Message Drop 💬</h3>
+        <h3 id="modalTitle">Sweet Message 💬</h3>
         <button class="chip small ghost" id="btnClose">Close</button>
       </div>
       <p class="modalText" id="modalText">...</p>
       <div class="modalActions">
-        <button class="btn primary" id="btnAnother">Another</button>
-        <button class="btn" id="btnConfetti">⚡ Burst</button>
+        <button class="btn primary" id="btnAnother">Another 💛</button>
+        <button class="btn" id="btnConfetti">🎉 Burst</button>
       </div>
     </div>
   </div>

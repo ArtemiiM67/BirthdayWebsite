@@ -1,11 +1,17 @@
-// ====== STRICT MESSAGE LIST (only these) ======
+// ===== Messages (simple + emojis) =====
 const MESSAGES = [
-  "I love you :)",
-  "You're the best mom in the world!",
-  "Happy Birthday! *hearts"
+  "I love you :) 💛",
+  "You're the best mom in the world! 💖",
+  "Happy Birthday! 💕🎂",
+  "You make every day better ☀️",
+  "Thank you for everything 🌷",
+  "You deserve the happiest day ever 🎉",
+  "Love you forever and always 💚",
+  "Big hug for you 🤗",
+  "You’re amazing mom 💕"
 ];
 
-// ====== Helpers ======
+// ===== Helpers =====
 const $ = (s, r = document) => r.querySelector(s);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const rand = (a, b) => Math.random() * (b - a) + a;
@@ -19,13 +25,13 @@ function toast(msg){
   toast._id = setTimeout(() => t.classList.remove("show"), 1800);
 }
 
-// ====== State ======
+// ===== State =====
 const state = {
   sparkles: 0,
   bites: 0,
   hearts: 0,
-  neon: true,
-  happiness: 8, // %
+  sunOn: true,
+  joy: 8,          // %
   orbsCaught: 0
 };
 
@@ -37,21 +43,23 @@ function updateUI(){
   $("#bites").textContent = state.bites;
   $("#hearts").textContent = state.hearts;
 
-  $("#meterFill").style.width = `${clamp(state.happiness, 0, 100)}%`;
+  $("#meterFill").style.width = `${clamp(state.joy, 0, 100)}%`;
 }
 
-function addHappiness(n){
-  state.happiness = clamp(state.happiness + n, 0, 100);
+function addJoy(n){
+  state.joy = clamp(state.joy + n, 0, 100);
   updateUI();
 }
 
-// ====== Background Canvas (neon grid + particles) ======
+// ===== Background canvas (soft floating petals + sparkle dots) =====
 const canvas = $("#bg");
 const ctx = canvas.getContext("2d", { alpha: true });
+
 let W = 0, H = 0;
 let DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
 
-const bgParticles = [];
+const petals = [];
+const spark = [];
 
 function resize(){
   W = window.innerWidth;
@@ -65,124 +73,136 @@ function resize(){
 window.addEventListener("resize", resize);
 resize();
 
-function spawnBgBurst(x, y, n = 40){
+function spawnPetals(n = 18){
   for(let i=0;i<n;i++){
-    bgParticles.push({
+    petals.push({
+      x: rand(0, W),
+      y: rand(-H*0.2, H),
+      r: rand(2.5, 5.0),
+      vy: rand(0.25, 0.7),
+      vx: rand(-0.15, 0.15),
+      w: rand(0, Math.PI*2),
+      a: rand(0.12, 0.22)
+    });
+  }
+}
+spawnPetals(26);
+
+function burstSparkles(x, y, n = 90){
+  for(let i=0;i<n;i++){
+    spark.push({
       x, y,
-      vx: rand(-2.8, 2.8),
-      vy: rand(-3.8, 1.8),
-      life: rand(30, 70),
-      hue: rand(0, 360),
+      vx: rand(-2.6, 2.6),
+      vy: rand(-3.6, 2.0),
+      g: 0.06,
       r: rand(2, 4),
-      a: 1
+      a: 1,
+      life: rand(35, 80),
+      hue: rand(40, 190)
     });
   }
 }
 
-function drawGrid(t){
-  const spacing = 46;
-  ctx.save();
-  ctx.globalAlpha = state.neon ? 0.18 : 0.10;
-  ctx.lineWidth = 1;
-
-  for(let y = (t*0.02)%spacing; y < H; y += spacing){
-    ctx.strokeStyle = "rgba(56,246,255,0.20)";
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(W, y);
-    ctx.stroke();
-  }
-  for(let x = (t*0.03)%spacing; x < W; x += spacing){
-    ctx.strokeStyle = "rgba(168,85,255,0.18)";
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, H);
-    ctx.stroke();
-  }
-  ctx.restore();
-}
-
-function tick(t){
+function tickBg(){
   ctx.clearRect(0,0,W,H);
 
-  // soft vignette
-  ctx.save();
-  ctx.globalAlpha = 0.20;
-  const g = ctx.createRadialGradient(W/2, H/2, 10, W/2, H/2, Math.max(W,H)*0.7);
-  g.addColorStop(0, "rgba(0,0,0,0)");
-  g.addColorStop(1, "rgba(0,0,0,0.55)");
-  ctx.fillStyle = g;
-  ctx.fillRect(0,0,W,H);
-  ctx.restore();
+  // subtle sun wash
+  if(state.sunOn){
+    const g = ctx.createRadialGradient(W*0.15, H*0.12, 20, W*0.15, H*0.12, Math.max(W,H)*0.6);
+    g.addColorStop(0, "rgba(255,240,170,0.35)");
+    g.addColorStop(1, "rgba(255,240,170,0)");
+    ctx.fillStyle = g;
+    ctx.fillRect(0,0,W,H);
+  }
 
-  drawGrid(t);
-
-  // particles
-  for(let i = bgParticles.length-1; i >= 0; i--){
-    const p = bgParticles[i];
-    p.life -= 1;
-    p.vy += 0.06;
-    p.x += p.vx;
+  // petals
+  for(const p of petals){
+    p.w += 0.02;
+    p.x += p.vx + Math.sin(p.w)*0.12;
     p.y += p.vy;
-    p.a *= 0.97;
+
+    if(p.y > H + 20){
+      p.y = -20;
+      p.x = rand(0, W);
+    }
+    if(p.x < -30) p.x = W + 30;
+    if(p.x > W + 30) p.x = -30;
 
     ctx.globalAlpha = p.a;
-    ctx.fillStyle = `hsla(${p.hue}, 95%, 70%, 1)`;
+    ctx.fillStyle = "rgba(47,122,74,1)";
     ctx.beginPath();
-    ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+    ctx.ellipse(p.x, p.y, p.r*1.4, p.r, p.w, 0, Math.PI*2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  // sparkle particles
+  for(let i = spark.length - 1; i >= 0; i--){
+    const s = spark[i];
+    s.life -= 1;
+    s.vy += s.g;
+    s.x += s.vx;
+    s.y += s.vy;
+    s.a *= 0.975;
+
+    ctx.globalAlpha = s.a;
+    ctx.fillStyle = `hsla(${s.hue}, 80%, 55%, 1)`;
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
     ctx.fill();
     ctx.globalAlpha = 1;
 
-    if(p.life <= 0 || p.a < 0.03) bgParticles.splice(i,1);
+    if(s.life <= 0 || s.a < 0.03) spark.splice(i, 1);
   }
 
-  requestAnimationFrame(tick);
+  requestAnimationFrame(tickBg);
 }
-requestAnimationFrame(tick);
+requestAnimationFrame(tickBg);
 
-// ====== Party Start / Burst / Neon Toggle / Reset ======
+// ===== Buttons: Start / Burst / Sun toggle / Reset =====
 $("#btnStart").addEventListener("click", () => {
-  spawnBgBurst(W*0.5, H*0.35, 140);
-  addHappiness(18);
+  burstSparkles(W*0.5, H*0.32, 160);
   spawnOrbs(10);
   addHearts(10);
-  toast("Party started! ⚡");
-  $("#footerText").textContent = "Party started. Click the cake!";
+  addJoy(18);
+  toast("Party started 🌿🎉");
+  $("#footerText").textContent = "Party started! Eat cake + collect sparkles ✨";
 });
 
-$("#btnBurst").addEventListener("click", (e) => {
-  spawnBgBurst(rand(W*0.25, W*0.75), rand(H*0.20, H*0.60), 220);
+$("#btnBurst").addEventListener("click", () => {
+  burstSparkles(rand(W*0.25, W*0.75), rand(H*0.20, H*0.60), 240);
   spawnOrbs(8);
-  addHappiness(10);
-  toast("BURST!!! ⚡");
+  addJoy(10);
+  toast("Burst!!! 🎉");
 });
 
-$("#btnNeon").addEventListener("click", () => {
-  state.neon = !state.neon;
-  $("#btnNeon").setAttribute("aria-pressed", state.neon ? "true" : "false");
-  $("#btnNeon").textContent = state.neon ? "🟣 Neon: On" : "⚪ Neon: Off";
-  toast(state.neon ? "Neon on 🟣" : "Neon off ⚪");
+$("#btnSun").addEventListener("click", () => {
+  state.sunOn = !state.sunOn;
+  $("#btnSun").setAttribute("aria-pressed", state.sunOn ? "true" : "false");
+  $("#btnSun").textContent = state.sunOn ? "☀️ Sun: On" : "🌥️ Sun: Off";
+  toast(state.sunOn ? "Sunlight on ☀️" : "Sunlight off 🌥️");
 });
 
 $("#btnReset").addEventListener("click", () => {
   state.sparkles = 0;
   state.bites = 0;
   state.hearts = 0;
-  state.happiness = 8;
+  state.joy = 8;
   state.orbsCaught = 0;
-  bgParticles.length = 0;
+
+  spark.length = 0;
 
   resetCake();
   clearOrbs();
   clearHearts();
 
-  $("#footerText").textContent = "Reset complete. Ready again.";
-  $("#collectorMsg").textContent = "Catch 10 orbs for a mega burst ⚡";
+  $("#collectorMsg").textContent = "Collect 10 orbs for a mega burst 🎉";
+  $("#footerText").textContent = "Reset complete 🌿";
   updateUI();
   toast("Reset ↺");
 });
 
-// ====== Messages Modal (ONLY allowed messages) ======
+// ===== Modal Messages =====
 const modal = $("#modal");
 const modalText = $("#modalText");
 
@@ -194,7 +214,6 @@ function closeModal(){
   modal.classList.remove("show");
   modal.setAttribute("aria-hidden", "true");
 }
-
 function setRandomMessage(){
   modalText.textContent = pick(MESSAGES);
 }
@@ -202,57 +221,59 @@ function setRandomMessage(){
 $("#btnMessage").addEventListener("click", () => {
   setRandomMessage();
   openModal();
-  spawnBgBurst(W*0.55, H*0.22, 90);
-  addHappiness(6);
+  burstSparkles(W*0.55, H*0.22, 70);
+  addJoy(6);
 });
 
 $("#btnClose").addEventListener("click", closeModal);
-modal.addEventListener("click", (e) => {
-  if(e.target === modal) closeModal();
-});
+modal.addEventListener("click", (e) => { if(e.target === modal) closeModal(); });
 
 $("#btnAnother").addEventListener("click", () => {
   setRandomMessage();
-  spawnBgBurst(W*0.55, H*0.25, 70);
+  burstSparkles(W*0.55, H*0.25, 55);
   toast("💬");
 });
 
 $("#btnConfetti").addEventListener("click", () => {
-  spawnBgBurst(W*0.5, H*0.35, 220);
+  burstSparkles(W*0.5, H*0.35, 220);
   spawnOrbs(6);
-  addHappiness(8);
-  toast("⚡");
+  addJoy(8);
+  toast("🎉");
 });
 
-// ====== Cake Bites ======
+// ===== Cake =====
 const cake = $("#cake");
-const crumbBox = $("#crumbBox");
+const cakeStage = $("#cakeStage");
+const sprinkleBox = $("#sprinkleBox");
 const MAX_BITES = 15;
 
-function sprinklePixels(n = 14){
-  const rect = cake.getBoundingClientRect();
+function sprinkle(n = 16){
+  const stageRect = cakeStage.getBoundingClientRect();
+  const cakeRect = cake.getBoundingClientRect();
+
   for(let i=0;i<n;i++){
-    const px = document.createElement("div");
-    px.className = "pixel";
-    const x = rect.left + rect.width/2 + rand(-34, 34);
-    const y = rect.top + rect.height/2 + rand(-26, 26);
+    const sp = document.createElement("div");
+    sp.className = "sprinkle";
 
-    // position relative to crumbBox
-    const b = crumbBox.getBoundingClientRect();
-    px.style.left = `${x - b.left}px`;
-    px.style.top = `${y - b.top}px`;
-    px.style.background = `hsla(${rand(0,360)}, 95%, 72%, 1)`;
-    crumbBox.appendChild(px);
+    // spawn around cake center, relative to stage
+    const cx = (cakeRect.left + cakeRect.width/2) - stageRect.left;
+    const cy = (cakeRect.top + cakeRect.height/2) - stageRect.top;
 
-    const dx = rand(-44, 44);
-    const dy = rand(18, 70);
-    px.animate(
+    sp.style.left = `${cx + rand(-34, 34)}px`;
+    sp.style.top  = `${cy + rand(-26, 26)}px`;
+    sp.style.background = `hsla(${rand(40,190)}, 70%, 55%, 1)`;
+
+    sprinkleBox.appendChild(sp);
+
+    const dx = rand(-60, 60);
+    const dy = rand(22, 90);
+    sp.animate(
       [
-        { transform: "translate(0,0) scale(1)", opacity: 1 },
-        { transform: `translate(${dx}px, ${dy}px) scale(0.7)`, opacity: 0 }
+        { transform: "translate(0,0) rotate(0deg) scale(1)", opacity: 1 },
+        { transform: `translate(${dx}px, ${dy}px) rotate(${rand(-120,120)}deg) scale(0.7)`, opacity: 0 }
       ],
-      { duration: rand(420, 740), easing: "cubic-bezier(.2,.8,.2,1)" }
-    ).onfinish = () => px.remove();
+      { duration: rand(420, 760), easing: "cubic-bezier(.2,.8,.2,1)" }
+    ).onfinish = () => sp.remove();
   }
 }
 
@@ -264,16 +285,18 @@ function cakeScale(){
 
 function biteCake(){
   if(state.bites >= MAX_BITES){
-    toast("Refill? 🍰");
+    toast("Refill? 🎂");
     return;
   }
 
   state.bites += 1;
   state.sparkles += 2;
-  addHappiness(3);
+  addJoy(3);
 
-  sprinklePixels(16);
-  spawnBgBurst(rand(W*0.45, W*0.55), rand(H*0.40, H*0.55), 30);
+  sprinkle(18);
+
+  const cakeRect = cake.getBoundingClientRect();
+  burstSparkles(cakeRect.left + cakeRect.width/2, cakeRect.top + cakeRect.height/2, 28);
 
   cake.animate(
     [
@@ -288,9 +311,9 @@ function biteCake(){
   updateUI();
 
   if(state.bites === MAX_BITES){
-    toast("Cake finished!!! ✨");
-    spawnBgBurst(W*0.5, H*0.45, 120);
-    addHappiness(16);
+    toast("Cake finished!!! 🎉");
+    burstSparkles(W*0.5, H*0.45, 140);
+    addJoy(16);
   } else {
     toast("nom 🍰");
   }
@@ -305,49 +328,55 @@ function resetCake(){
 cake.addEventListener("click", biteCake);
 $("#btnRefill").addEventListener("click", () => {
   resetCake();
-  toast("Refilled 🍰");
+  toast("Refilled 🎂");
 });
 
-// ====== Magnet Hearts ======
+// ===== Heart Garden (fixed positioning) =====
 const heartsArena = $("#heartsArena");
 let mouse = { x: 0, y: 0 };
-const heartEls = [];
+const hearts = [];
 
 function heartEmoji(){
-  return Math.random() < 0.5 ? "💗" : "💖";
+  const opts = ["💖","💗","💞","💕"];
+  return opts[Math.floor(Math.random()*opts.length)];
 }
 
-function createHeart(x = rand(40, heartsArena.clientWidth - 40), y = rand(40, heartsArena.clientHeight - 40)){
+function createHeart(x, y){
   const el = document.createElement("div");
   el.className = "heart";
   el.textContent = heartEmoji();
 
-  const h = {
-    el,
-    x, y,
-    vx: rand(-0.6, 0.6),
-    vy: rand(-0.6, 0.6),
-    wob: rand(0, Math.PI*2),
-  };
-  el.style.left = `${x}px`;
-  el.style.top = `${y}px`;
+  const w = heartsArena.clientWidth;
+  const h = heartsArena.clientHeight;
 
-  el.addEventListener("click", () => {
-    // pop into sparkles
+  const obj = {
+    el,
+    x: clamp(x ?? rand(20, w-20), 6, w-26),
+    y: clamp(y ?? rand(50, h-20), 6, h-26),
+    vx: rand(-0.5, 0.5),
+    vy: rand(-0.5, 0.5),
+    wob: rand(0, Math.PI*2)
+  };
+
+  el.style.left = `${obj.x}px`;
+  el.style.top  = `${obj.y}px`;
+
+  el.addEventListener("click", (e) => {
+    e.stopPropagation();
     const r = el.getBoundingClientRect();
-    spawnBgBurst(r.left + r.width/2, r.top + r.height/2, 70);
+    burstSparkles(r.left + r.width/2, r.top + r.height/2, 70);
     state.sparkles += 5;
     state.hearts = Math.max(0, state.hearts - 1);
-    addHappiness(5);
+    addJoy(5);
     updateUI();
     el.remove();
-    const idx = heartEls.indexOf(h);
-    if(idx >= 0) heartEls.splice(idx, 1);
-    toast("💗");
+    const idx = hearts.indexOf(obj);
+    if(idx >= 0) hearts.splice(idx, 1);
+    toast("💖");
   });
 
   heartsArena.appendChild(el);
-  heartEls.push(h);
+  hearts.push(obj);
 
   state.hearts += 1;
   updateUI();
@@ -358,7 +387,7 @@ function addHearts(n = 6){
 }
 
 function clearHearts(){
-  heartEls.splice(0).forEach(h => h.el.remove());
+  while(hearts.length) hearts.pop().el.remove();
   state.hearts = 0;
   updateUI();
 }
@@ -368,11 +397,11 @@ heartsArena.addEventListener("pointermove", (e) => {
   mouse.x = e.clientX - rect.left;
   mouse.y = e.clientY - rect.top;
 });
+
 heartsArena.addEventListener("click", (e) => {
-  // avoid double when clicking heart itself
-  if(e.target.classList.contains("heart")) return;
+  // click empty area adds a heart at click
   createHeart(e.offsetX, e.offsetY);
-  toast("Added 💗");
+  toast("Added 💖");
 });
 
 $("#btnHearts").addEventListener("click", () => {
@@ -380,37 +409,38 @@ $("#btnHearts").addEventListener("click", () => {
   toast("Hearts +");
 });
 
-// physics tick for hearts
 function tickHearts(){
-  const rect = heartsArena.getBoundingClientRect();
-  const w = rect.width, h = rect.height;
+  const w = heartsArena.clientWidth;
+  const h = heartsArena.clientHeight;
 
-  for(const Ht of heartEls){
-    const dx = mouse.x - Ht.x;
-    const dy = mouse.y - Ht.y;
+  for(const ht of hearts){
+    const dx = mouse.x - ht.x;
+    const dy = mouse.y - ht.y;
     const d = Math.hypot(dx, dy) || 1;
 
     // magnet pull
-    const pull = 0.020;
-    Ht.vx += (dx / d) * pull;
-    Ht.vy += (dy / d) * pull;
+    const pull = 0.018;
+    ht.vx += (dx / d) * pull;
+    ht.vy += (dy / d) * pull;
 
-    // drift + damping
-    Ht.wob += 0.06;
-    Ht.vx += Math.sin(Ht.wob) * 0.002;
-    Ht.vy += Math.cos(Ht.wob) * 0.002;
+    // gentle wobble
+    ht.wob += 0.06;
+    ht.vx += Math.sin(ht.wob) * 0.002;
+    ht.vy += Math.cos(ht.wob) * 0.002;
 
-    Ht.vx *= 0.96;
-    Ht.vy *= 0.96;
+    // damping
+    ht.vx *= 0.96;
+    ht.vy *= 0.96;
 
-    Ht.x += Ht.vx;
-    Ht.y += Ht.vy;
+    ht.x += ht.vx;
+    ht.y += ht.vy;
 
     // bounds
-    Ht.x = clamp(Ht.x, 6, w - 18);
-    Ht.y = clamp(Ht.y, 6, h - 18);
+    ht.x = clamp(ht.x, 6, w - 26);
+    ht.y = clamp(ht.y, 40, h - 26);
 
-    Ht.el.style.transform = `translate(${Ht.x}px, ${Ht.y}px)`;
+    ht.el.style.left = `${ht.x}px`;
+    ht.el.style.top  = `${ht.y}px`;
   }
 
   requestAnimationFrame(tickHearts);
@@ -420,7 +450,7 @@ requestAnimationFrame(tickHearts);
 // initial hearts
 addHearts(10);
 
-// ====== Collector Orbs + Neon Trail ======
+// ===== Sparkle Collector (fixed positioning + collisions) =====
 const collector = $("#collector");
 const orbs = [];
 let drawing = false;
@@ -428,15 +458,23 @@ let drawing = false;
 function createOrb(){
   const el = document.createElement("div");
   el.className = "orb";
+
   const w = collector.clientWidth;
   const h = collector.clientHeight;
-  const x = rand(16, w - 16);
-  const y = rand(50, h - 16);
-  el.style.left = `${x}px`;
-  el.style.top = `${y}px`;
-  collector.appendChild(el);
 
-  orbs.push({ el, x, y, vx: rand(-0.35, 0.35), vy: rand(-0.35, 0.35) });
+  const obj = {
+    el,
+    x: rand(16, w - 30),
+    y: rand(56, h - 30),
+    vx: rand(-0.45, 0.45),
+    vy: rand(-0.45, 0.45)
+  };
+
+  el.style.left = `${obj.x}px`;
+  el.style.top  = `${obj.y}px`;
+
+  collector.appendChild(el);
+  orbs.push(obj);
 }
 
 function spawnOrbs(n = 6){
@@ -444,15 +482,16 @@ function spawnOrbs(n = 6){
 }
 
 function clearOrbs(){
-  orbs.splice(0).forEach(o => o.el.remove());
+  while(orbs.length) orbs.pop().el.remove();
 }
 
 function addTrailDot(x, y){
   const d = document.createElement("div");
   d.className = "trail";
   d.style.left = `${x - 5}px`;
-  d.style.top = `${y - 5}px`;
+  d.style.top  = `${y - 5}px`;
   collector.appendChild(d);
+
   d.animate(
     [
       { transform: "scale(1)", opacity: 0.85 },
@@ -467,34 +506,39 @@ window.addEventListener("pointerup", () => { drawing = false; });
 
 collector.addEventListener("pointermove", (e) => {
   if(!drawing) return;
+
   const rect = collector.getBoundingClientRect();
   const x = e.clientX - rect.left;
   const y = e.clientY - rect.top;
+
   addTrailDot(x, y);
 
-  // collision with orbs
+  // collision with orbs (use orb center)
   for(let i=orbs.length-1; i>=0; i--){
     const o = orbs[i];
-    const ox = o.x, oy = o.y;
+    const ox = o.x + 7;
+    const oy = o.y + 7;
     const dist = Math.hypot(x - ox, y - oy);
+
     if(dist < 18){
       // caught!
       const br = o.el.getBoundingClientRect();
-      spawnBgBurst(br.left + 7, br.top + 7, 60);
+      burstSparkles(br.left + 7, br.top + 7, 70);
+
       state.sparkles += 8;
       state.orbsCaught += 1;
-      addHappiness(4);
+      addJoy(4);
       updateUI();
 
       o.el.remove();
       orbs.splice(i, 1);
 
       if(state.orbsCaught % 10 === 0){
-        $("#collectorMsg").textContent = "MEGA BURST UNLOCKED ⚡";
-        spawnBgBurst(W*0.5, H*0.35, 260);
+        $("#collectorMsg").textContent = "MEGA BURST UNLOCKED 🎉";
+        burstSparkles(W*0.5, H*0.35, 260);
         spawnOrbs(10);
-        addHappiness(18);
-        toast("MEGA ⚡");
+        addJoy(18);
+        toast("MEGA 🎉");
       }
     }
   }
@@ -509,12 +553,13 @@ function tickOrbs(){
     o.y += o.vy;
 
     if(o.x < 8 || o.x > w - 22) o.vx *= -1;
-    if(o.y < 40 || o.y > h - 22) o.vy *= -1;
+    if(o.y < 48 || o.y > h - 22) o.vy *= -1;
 
     o.x = clamp(o.x, 8, w - 22);
-    o.y = clamp(o.y, 40, h - 22);
+    o.y = clamp(o.y, 48, h - 22);
 
-    o.el.style.transform = `translate(${o.x}px, ${o.y}px)`;
+    o.el.style.left = `${o.x}px`;
+    o.el.style.top  = `${o.y}px`;
   }
 
   requestAnimationFrame(tickOrbs);
@@ -523,24 +568,24 @@ requestAnimationFrame(tickOrbs);
 
 $("#btnSpawnOrbs").addEventListener("click", () => {
   spawnOrbs(8);
-  toast("Orbs +");
+  toast("Orbs + ✨");
 });
 
-// ====== Global click sparkle + footer updates ======
+// ===== Global click sparkle =====
 window.addEventListener("click", (e) => {
   const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
-  if(["button"].includes(tag)) return;
+  if(tag === "button") return;
 
-  spawnBgBurst(e.clientX, e.clientY, 40);
+  burstSparkles(e.clientX, e.clientY, 50);
   state.sparkles += 1;
   updateUI();
 });
 
+// ===== Boot =====
 function boot(){
   updateUI();
   spawnOrbs(10);
-  $("#footerText").textContent = "Click “Start Party” to go crazy ⚡";
-  // tiny welcome sparkle
-  setTimeout(() => spawnBgBurst(W*0.5, H*0.28, 120), 350);
+  $("#footerText").textContent = "Click “Start Party” 🌿";
+  setTimeout(() => burstSparkles(W*0.5, H*0.26, 120), 350);
 }
 boot();
