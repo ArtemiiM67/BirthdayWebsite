@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Happy Birthday Mom!</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Background animation canvas -->
+  <canvas id="fx"></canvas>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="dot"></span>
+      <span>Birthday Mode</span>
+    </div>
+
+    <div class="toggles">
+      <button id="btnMusic" class="btn small" aria-pressed="false" title="Toggle music">
+        🎵 Music: Off
+      </button>
+      <button id="btnStars" class="btn small" aria-pressed="false" title="Toggle wishing stars mode">
+        ✨ Stars: Off
+      </button>
+      <button id="btnConfetti" class="btn small" title="Burst confetti">
+        🎉 Confetti
+      </button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <div class="heroCard glass">
+        <p class="kicker">Today is all about you 💛</p>
+        <h1 class="headline">
+          Happy Birthday <span class="shine">To The Best Mom Ever!</span>
+        </h1>
+        <p class="sub">
+          Tap everything. Pop balloons. Open gifts. Make wishes. Eat cake. 🎂
+        </p>
+
+        <div class="heroActions">
+          <button id="btnSurprise" class="btn primary">
+            💝 Big Surprise
+          </button>
+          <button id="btnAddBalloons" class="btn">
+            🎈 Add Balloons
+          </button>
+          <button id="btnReset" class="btn ghost">
+            ↺ Reset
+          </button>
+        </div>
+
+        <div class="stats">
+          <div class="stat">
+            <div class="statNum" id="statPops">0</div>
+            <div class="statLbl">Balloons popped</div>
+          </div>
+          <div class="stat">
+            <div class="statNum" id="statCake">0</div>
+            <div class="statLbl">Cake bites</div>
+          </div>
+          <div class="stat">
+            <div class="statNum" id="statWishes">0</div>
+            <div class="statLbl">Wishes made</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sideCards">
+        <section class="card glass" id="balloonZone">
+          <h2 class="cardTitle">🎈 Balloon Pop</h2>
+          <p class="cardText">Click balloons to pop them. More balloons = more fun.</p>
+          <div class="balloonField" id="balloonField" aria-label="Balloon field"></div>
+          <div class="cardRow">
+            <button class="btn small" id="btnMore">+ More</button>
+            <button class="btn small ghost" id="btnLess">- Less</button>
+          </div>
+        </section>
+
+        <section class="card glass" id="cakeZone">
+          <h2 class="cardTitle">🎂 Eat The Cake</h2>
+          <p class="cardText">Click slices to “eat” them. The cake shrinks as you go.</p>
+
+          <div class="cakeWrap">
+            <div class="plate"></div>
+
+            <div class="cake" id="cake" role="button" tabindex="0" aria-label="Birthday cake">
+              <div class="cakeTop"></div>
+              <div class="cakeMid"></div>
+              <div class="cakeBot"></div>
+
+              <div class="candles">
+                <div class="candle"><span class="flame"></span></div>
+                <div class="candle"><span class="flame"></span></div>
+                <div class="candle"><span class="flame"></span></div>
+              </div>
+
+              <div class="sprinkles"></div>
+              <div class="cakeHint">Click slices 🍰</div>
+
+              <!-- click targets -->
+              <div class="slices" id="slices" aria-hidden="true"></div>
+            </div>
+
+            <div class="crumbs" id="crumbs" aria-hidden="true"></div>
+          </div>
+
+          <div class="cardRow">
+            <div class="pill">Bites: <strong id="cakeBites">0</strong>/12</div>
+            <button class="btn small" id="btnRefill">Refill Cake</button>
+          </div>
+        </section>
+
+        <section class="card glass" id="giftZone">
+          <h2 class="cardTitle">🎁 Open The Gift</h2>
+          <p class="cardText">Open it for a sweet message + hearts.</p>
+
+          <div class="giftArea">
+            <button id="gift" class="gift" aria-label="Open gift">
+              <span class="lid"></span>
+              <span class="box"></span>
+              <span class="ribbonV"></span>
+              <span class="ribbonH"></span>
+              <span class="bow"></span>
+            </button>
+
+            <div class="giftMsg" id="giftMsg" aria-live="polite">
+              <div class="giftMsgInner">
+                <h3>Mom, you’re my hero.</h3>
+                <p>
+                  Thank you for everything you do — your love, your strength,
+                  your patience, and your heart. I’m so lucky you’re my mom. 💛
+                </p>
+                <p class="sig">— Love you always</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="cardRow">
+            <button class="btn small" id="btnCloseGift">Close</button>
+            <button class="btn small ghost" id="btnHearts">💗 Hearts</button>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="footer glass">
+      <div class="footerLeft">
+        <div class="hint">
+          <span class="kbd">Tip</span>
+          Try <strong>Stars mode</strong> ✨ then drag your mouse around.
+        </div>
+      </div>
+      <div class="footerRight">
+        <span class="mini">Made with ❤️ for Mom</span>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
